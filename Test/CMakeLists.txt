@@ -27,4 +27,4 @@ endif()
 add_executable(${PROJECT_UT} ${SOURCE_FILES} ${HEADER_FILES} ${SOURCE_TEST_FILES})
 target_link_libraries(${PROJECT_UT} ${PROJECT_LIB} gtest_main gmock_main)
 
-add_test(NAME TestSuite COMMAND ${PROJECT_UT})
+add_test(NAME multi_handler_test COMMAND ${PROJECT_UT})
