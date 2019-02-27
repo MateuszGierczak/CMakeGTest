@@ -2,29 +2,24 @@
 
 #include "state.hpp"
 
+namespace
+{
+	constexpr std::string_view STATE_NAME = "TESTABLE";
+}
+
+unsigned value = 0;
+
 struct state_test : ::testing::Test
 {
-	void TearDown()
-	{
-		value = 0;
-	}
+	void TearDown() { value = 0; }
 
-	static void callable()
-	{
-		value++;
-	}
+	static void callable() { value++; }
 
-	static unsigned value;
+	state sut{ STATE_NAME,
+			   &state_test::callable };
 };
-
-unsigned state_test::value = 0u;
 
 TEST_F(state_test, should_get_proper_state_name)
 {
-	state sut{ "idle",
-			   &state_test::callable };
-
-	sut.handle_event(10);
-
-	ASSERT_EQ(1, 10000);
+	ASSERT_STREQ(STATE_NAME.data(), sut.name());
 }
