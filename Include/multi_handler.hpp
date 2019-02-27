@@ -2,25 +2,34 @@
 
 #include <tuple>
 
-template<typename T, typename... Ts>
-struct multi_handler
+struct multi_handler_base
 {
-	multi_handler(T t, Ts... ts)
-		: handlers{ std::make_tuple(t, ts...) }
+	virtual ~multi_handler_base() = default;
+
+	virtual bool handle_event(unsigned) = 0;
+};
+
+template<typename Handler, typename... Handlers>
+struct multi_handler : multi_handler_base
+{
+	multi_handler(Handler handler, Handlers... handlers)
+		: handlers{ std::make_tuple(handler, handlers...) }
 	{}
 
-	void operator()()
+	bool handle_event(unsigned) override
 	{
-		call_handlers(handlers, std::index_sequence_for<T, Ts...>());
+		return call_handlers(handlers, 
+							 std::index_sequence_for<Handler, Handlers...>());
 	}
 
 private:
 
 	template<typename Tuple, std::size_t... Is>
-	void call_handlers(const Tuple& handlers, std::index_sequence<Is...>)
+	bool call_handlers(const Tuple& handlers, std::index_sequence<Is...>)
 	{
 		(std::get<Is>(handlers)(), ...);
+		return true;
 	}
 
-	std::tuple<T, Ts...> handlers{};
+	std::tuple<Handler, Handlers...> handlers{};
 };

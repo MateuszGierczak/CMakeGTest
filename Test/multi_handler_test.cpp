@@ -23,7 +23,7 @@ TEST_F(multi_handler_test, should_call_functions)
 {
 	multi_handler sut(&multi_handler_test::callable);
 
-	sut();
+	sut.handle_event(10);
 
 	ASSERT_EQ(value, 1);
 }

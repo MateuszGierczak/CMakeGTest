@@ -24,7 +24,9 @@ if(CMAKE_VERSION VERSION_LESS 2.8.11)
                         "${gmock_SOURCE_DIR}/include")
 endif()
 
-add_executable(${PROJECT_UT} ${SOURCE_FILES} ${HEADER_FILES} ${SOURCE_TEST_FILES})
+include_directories(${HEADER_FILES})
+add_executable(${PROJECT_UT} ${SOURCE_FILES} ${SOURCE_TEST_FILES})
 target_link_libraries(${PROJECT_UT} ${PROJECT_LIB} gtest_main gmock_main)
 
 add_test(NAME multi_handler_test COMMAND ${PROJECT_UT})
+add_test(NAME state_test COMMAND ${PROJECT_UT})
