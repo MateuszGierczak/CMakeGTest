@@ -31,16 +31,18 @@ struct multi_handler : multi_handler_base
 	bool handle_event(unsigned event) const override
 	{
 		return call_on_event_handlers(handlers_,
-									  event
+									  event,
 									  std::index_sequence_for<Handler, Handlers...>());
 	}
 
 private:
 
 	template<typename Tuple, std::size_t... Is>
-	bool call_on_event_handlers(const Tuple& handlers, unsigned, std::index_sequence<Is...>) const
+	bool call_on_event_handlers(const Tuple& handlers, 
+								unsigned event, 
+								std::index_sequence<Is...>) const
 	{
-		(std::get<Is>(handlers)(), ...);
+		(std::get<Is>(handlers)(event), ...);
 		return true;
 	}
 

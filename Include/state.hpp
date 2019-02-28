@@ -14,7 +14,7 @@ struct state
 		  handlers_{ std::make_unique<multi_handler<Handler, Handlers...>>(handler, handlers...) }
 	{}
 
-	const char* name()
+	auto name() noexcept
 	{
 		return name_.data();
 	}
@@ -29,9 +29,9 @@ struct state
 		handlers_->on_leave();
 	}
 
-	bool handle_event(unsigned e) 
+	bool handle_event(unsigned event) const
 	{
-		return handlers_->handle_event(e);
+		return handlers_->handle_event(event);
 	}
 
 private:
