@@ -19,8 +19,15 @@ struct state
 		return name_.data();
 	}
 
-	void on_entry() {}
-	void on_leave() {}
+	void on_entry() const 
+	{
+		handlers_->on_entry();
+	}
+
+	void on_leave() const 
+	{
+		handlers_->on_leave();
+	}
 
 	bool handle_event(unsigned e) 
 	{
