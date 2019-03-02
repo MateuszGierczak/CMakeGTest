@@ -2,6 +2,8 @@
 
 #include <tuple>
 
+#include "handler_type.hpp"
+
 struct multi_handler_base
 {
 	virtual ~multi_handler_base() = default;
@@ -20,30 +22,75 @@ struct multi_handler : multi_handler_base
 
 	void on_entry() const override
 	{
-
+		call_on_entry_handlers(handlers_,
+							   std::index_sequence_for<Handler, Handlers...>());
 	}
 
 	void on_leave() const override
 	{
-
+		call_on_leave_handlers(handlers_,
+							   std::index_sequence_for<Handler, Handlers...>());
 	}
 
 	bool handle_event(unsigned event) const override
 	{
-		return call_on_event_handlers(handlers_,
-									  event,
-									  std::index_sequence_for<Handler, Handlers...>());
+		bool was_event_consumed
+			= call_on_event_handlers(handlers_,
+									 event,
+									 std::index_sequence_for<Handler, Handlers...>());
+		return was_event_consumed;
 	}
 
 private:
 
 	template<typename Tuple, std::size_t... Is>
-	bool call_on_event_handlers(const Tuple& handlers, 
-								unsigned event, 
+	bool call_on_event_handlers(const Tuple& handlers,
+		unsigned event,
+		std::index_sequence<Is...>) const
+	{
+		return (call_on_event_handler(std::get<Is>(handlers), event) || ...);;
+	}
+
+	template<typename Handler>
+	bool call_on_event_handler(const Handler& handler, unsigned event) const
+	{
+		if constexpr (Handler::type == handler_type::on_event)
+		{
+			return handler(event);
+		}
+		return false;
+	}
+
+	template<typename Tuple, std::size_t... Is>
+	void call_on_entry_handlers(const Tuple& handlers,
 								std::index_sequence<Is...>) const
 	{
-		(std::get<Is>(handlers)(event), ...);
-		return true;
+		(call_on_entry_handler(std::get<Is>(handlers)), ...);
+	}
+
+	template<typename Handler>
+	void call_on_entry_handler(const Handler& handler) const
+	{
+		if constexpr (Handler::type == handler_type::on_entry)
+		{
+			handler();
+		}
+	}
+
+	template<typename Tuple, std::size_t... Is>
+	void call_on_leave_handlers(const Tuple& handlers,
+								std::index_sequence<Is...>) const
+	{
+		(call_on_leave_handler(std::get<Is>(handlers)), ...);
+	}
+
+	template<typename Handler>
+	void call_on_leave_handler(const Handler& handler) const
+	{
+		if constexpr (Handler::type == handler_type::on_leave)
+		{
+			handler();
+		}
 	}
 
 	std::tuple<Handler, Handlers...> handlers_{};

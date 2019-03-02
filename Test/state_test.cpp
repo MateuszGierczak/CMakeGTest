@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "state.hpp"
+#include "on_event_hadler.hpp"
 
 namespace
 {
@@ -14,10 +15,14 @@ struct state_test : ::testing::Test
 {
 	void TearDown() { value = 0; }
 
-	static void callable(unsigned) { value++; }
+	static bool callable(unsigned) 
+	{ 
+		value++;
+		return true;
+	}
 
 	state sut{ STATE_NAME,
-			   &state_test::callable };
+			   on_event(&state_test::callable) };
 };
 
 TEST_F(state_test, should_get_proper_state_name)
@@ -32,4 +37,11 @@ TEST_F(state_test, should_call_handler)
 	sut.handle_event(DUMMY_EVENT);
 
 	ASSERT_EQ(value, EXPECTED_VALUE);
+}
+
+TEST_F(state_test, should_return_true_when_event_was_consumed)
+{
+	bool was_event_consumed = sut.handle_event(DUMMY_EVENT);
+
+	ASSERT_TRUE(was_event_consumed);
 }
