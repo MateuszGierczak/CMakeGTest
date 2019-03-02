@@ -30,5 +30,6 @@ target_link_libraries(${PROJECT_UT} gtest_main gmock_main)
 
 add_test(NAME state_test COMMAND ${PROJECT_UT})
 add_test(NAME multi_handler_test COMMAND ${PROJECT_UT})
+add_test(NAME on_event_handler_test COMMAND ${PROJECT_UT})
 add_test(NAME event_test COMMAND ${PROJECT_UT})
 
