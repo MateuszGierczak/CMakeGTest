@@ -7,6 +7,7 @@ namespace
 {
 	constexpr std::string_view STATE_NAME = "TESTABLE";
 	constexpr unsigned FIRST_EVENT_ID = 10u;
+	constexpr unsigned SECOND_EVENT_ID = 15u;
 	constexpr unsigned UNEXPECTED_EVENT_ID = 20u;
 }
 
@@ -23,7 +24,8 @@ struct state_test : ::testing::Test
 	}
 
 	state sut{ STATE_NAME,
-			   on_event<FIRST_EVENT_ID>(&state_test::handler_for_first_event) };
+			   on_event<FIRST_EVENT_ID>(&state_test::handler_for_first_event),
+			   on_event<SECOND_EVENT_ID>(&state_test::handler_for_first_event) };
 };
 
 TEST_F(state_test, should_get_proper_state_name)

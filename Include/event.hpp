@@ -8,7 +8,7 @@ struct bad_event_payload_cast
 struct event
 {
 	template<typename PayloadType>
-	event(unsigned id, const PayloadType& payload) 
+	constexpr event(unsigned id, const PayloadType& payload) 
 		: id_{id},
 		  payload_{payload}
 	{}
