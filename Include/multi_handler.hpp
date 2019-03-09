@@ -4,13 +4,15 @@
 
 #include "handler_type.hpp"
 
+struct event;
+
 struct multi_handler_base
 {
 	virtual ~multi_handler_base() = default;
 
 	virtual void on_entry() const = 0;
 	virtual void on_leave() const = 0;
-	virtual bool handle_event(unsigned) const = 0;
+	virtual bool handle_event(const event&) const = 0;
 };
 
 template<typename Handler, typename... Handlers>
@@ -32,7 +34,7 @@ struct multi_handler : multi_handler_base
 							   std::index_sequence_for<Handler, Handlers...>());
 	}
 
-	bool handle_event(unsigned event) const override
+	bool handle_event(const event& event) const override
 	{
 		bool was_event_consumed
 			= call_on_event_handlers(handlers_,
@@ -45,14 +47,14 @@ private:
 
 	template<typename Tuple, std::size_t... Is>
 	bool call_on_event_handlers(const Tuple& handlers,
-		unsigned event,
-		std::index_sequence<Is...>) const
+								const event& event,
+								std::index_sequence<Is...>) const
 	{
 		return (call_on_event_handler(std::get<Is>(handlers), event) || ...);;
 	}
 
 	template<typename Handler>
-	bool call_on_event_handler(const Handler& handler, unsigned event) const
+	bool call_on_event_handler(const Handler& handler, const event& event) const
 	{
 		if constexpr (Handler::type == handler_type::on_event)
 		{

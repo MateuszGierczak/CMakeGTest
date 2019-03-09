@@ -7,13 +7,14 @@ namespace
 	constexpr unsigned FIRST_EVENT_ID = 10u;
 	constexpr unsigned SECOND_EVENT_ID = 15u;
 	constexpr unsigned UNEXPECTED_EVENT_ID = 20u;
+	constexpr unsigned PAYLOAD = 100u;
 }
 
 struct on_event_handler_test : ::testing::Test
 {
 	void TearDown() { value = 0; }
 
-	static bool callable(unsigned) 
+	static bool callable(const event&) 
 	{
 		value++;
 		return true;
@@ -30,7 +31,7 @@ TEST_F(on_event_handler_test, should_call_handler_when_event_id_matched)
 
 	auto sut = on_event<FIRST_EVENT_ID>(&on_event_handler_test::callable);
 
-	sut(FIRST_EVENT_ID);
+	sut(event{ FIRST_EVENT_ID, PAYLOAD });
 
 	ASSERT_EQ(EXPECTED_VALUE, on_event_handler_test::value);
 }
@@ -41,8 +42,8 @@ TEST_F(on_event_handler_test, should_call_single_handler_for_multi_event_ids)
 
 	auto sut = on_event<FIRST_EVENT_ID, SECOND_EVENT_ID>(&on_event_handler_test::callable);
 
-	ASSERT_TRUE(sut(FIRST_EVENT_ID));
-	ASSERT_TRUE(sut(SECOND_EVENT_ID));
+	ASSERT_TRUE(sut(event{ FIRST_EVENT_ID, PAYLOAD }));
+	ASSERT_TRUE(sut(event{ SECOND_EVENT_ID, PAYLOAD }));
 
 	ASSERT_EQ(EXPECTED_VALUE, value);
 }
@@ -51,7 +52,7 @@ TEST_F(on_event_handler_test, should_return_false_when_event_doesnt_consumed)
 {
 	auto sut = on_event<FIRST_EVENT_ID, SECOND_EVENT_ID>(&on_event_handler_test::callable);
 
-	bool was_event_consumed = sut(UNEXPECTED_EVENT_ID);
+	bool was_event_consumed = sut(event{ UNEXPECTED_EVENT_ID, PAYLOAD });
 
 	ASSERT_FALSE(was_event_consumed);
 }

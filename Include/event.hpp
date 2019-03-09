@@ -13,7 +13,7 @@ struct event
 		  payload_{payload}
 	{}
 
-	auto id() noexcept
+	auto id() const noexcept
 	{
 		return id_;
 	}
