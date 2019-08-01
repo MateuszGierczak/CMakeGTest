@@ -1,9 +1,7 @@
 #pragma once
 
 #include <any>
-
-struct bad_event_payload_cast
-{};
+#include "event_payload_bad_cast.hpp"
 
 struct event
 {
@@ -25,7 +23,7 @@ struct event
 
 		if (payload == nullptr)
 		{
-			throw bad_event_payload_cast{};
+            throw event_payload_bad_cast{};
 		}
 		return *payload;
 	}
