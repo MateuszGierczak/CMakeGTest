@@ -1,22 +1,17 @@
 #include <gtest/gtest.h>
 
 #include "event.hpp"
-#include "event_payload_bad_cast.hpp"
 
-namespace
-{
-	constexpr unsigned FIRST_EVENT_ID = 10u;
-	constexpr unsigned EVENT_PAYLOAD = 5u;
-}
+#include "DummyEvent.hpp"
 
 struct event_test : ::testing::Test
 { 
-	event sut { FIRST_EVENT_ID, EVENT_PAYLOAD }; 
+    event sut { DummyEvent{} };
 };
 
 TEST_F(event_test, should_get_proper_event_id)
 {
-	ASSERT_EQ(FIRST_EVENT_ID, sut.id());
+	ASSERT_EQ(DUMMY_EVENT_ID, sut.id());
 }
 
 TEST_F(event_test, should_throw_expeption_when_payload_doesnt_match)
@@ -27,7 +22,7 @@ TEST_F(event_test, should_throw_expeption_when_payload_doesnt_match)
 TEST_F(event_test, should_get_proper_payload_and_no_throw_exception)
 {
 	ASSERT_NO_THROW({
-		auto payload = sut.payload<unsigned>();
-		ASSERT_EQ(EVENT_PAYLOAD, payload);
+		const auto& payload = sut.payload<DummyEvent>();
+		ASSERT_EQ(DUMMY_EVENT_PAYLOAD_VALUE, payload.value);
 	});
 }

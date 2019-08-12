@@ -1,32 +1,23 @@
 #pragma once
 
-#include "handler_type.hpp"
 #include "event.hpp"
+#include "handler_base.hpp"
 
-namespace
+template<typename EventPayloadType>
+struct on_event_handler : handler_base<handler_type::on_event>
 {
-	template<unsigned ID, unsigned... IDs>
-	bool has_id(unsigned id)
-	{
-		return id == ID || ((id == IDs) || ...);
-	}
-}
-template<unsigned ID, unsigned... IDs>
-struct on_event_handler
-{
-	constexpr static handler_type type = handler_type::on_event;
+	using FunctionType = void(*)(const EventPayloadType&);
 
-	using FunctionType = bool(*)(const event&);
-
-	on_event_handler(FunctionType function) :
-		function_{ function }
+	on_event_handler(FunctionType function) 
+        : function_{ function }
 	{}
 
-	bool operator()(const event& event) const
+	bool handle_event(const event& e) const
 	{
-		if (has_id<ID, IDs...>(event.id()))
+		if (event_type_traits<EventPayloadType>::id == e.id())
 		{
-			return function_(event);
+            function_(e.payload<EventPayloadType>());
+            return true;
 		}
 		return false;
 	}
@@ -35,8 +26,8 @@ private:
 	FunctionType function_{};
 };
 
-template<unsigned ID, unsigned... IDs, typename Function>
-auto on_event(Function function)
+template<typename ReturnType, typename EventPayloadType>
+auto on_event(ReturnType (*function)(const EventPayloadType&))
 {
-	return on_event_handler<ID, IDs...>(function);
+	return on_event_handler<EventPayloadType>(function);
 }

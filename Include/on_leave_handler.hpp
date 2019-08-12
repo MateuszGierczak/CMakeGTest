@@ -1,18 +1,16 @@
 #pragma once
 
-#include "handler_type.hpp"
+#include "handler_base.hpp"
 
-struct on_leave_handler
+struct on_leave_handler : handler_base<handler_type::on_leave>
 {
-	constexpr static handler_type type = handler_type::on_leave;
-
 	using FunctionType = void(*)();
 
 	on_leave_handler(FunctionType function) 
 		: function_{ function }
 	{}
 
-	void operator()()
+	void on_leave() const
 	{
 		function_();
 	}

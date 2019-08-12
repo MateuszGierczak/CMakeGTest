@@ -1,13 +1,15 @@
 #pragma once
 
 #include <any>
+
+#include "event_type_traits.hpp"
 #include "event_payload_bad_cast.hpp"
 
 struct event
 {
 	template<typename PayloadType>
-	constexpr event(unsigned id, const PayloadType& payload) 
-		: id_{id},
+	constexpr explicit event(const PayloadType& payload) 
+		: id_{event_type_traits<PayloadType>::id},
 		  payload_{payload}
 	{}
 
@@ -17,9 +19,9 @@ struct event
 	}
 
 	template<typename PayloadType>
-	const PayloadType& payload()
+	const PayloadType& payload() const
 	{
-		PayloadType* payload = std::any_cast<PayloadType>(&payload_);
+		const PayloadType* payload = std::any_cast<PayloadType>(&payload_);
 
 		if (payload == nullptr)
 		{

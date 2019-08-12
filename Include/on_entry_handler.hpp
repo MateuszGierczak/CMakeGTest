@@ -1,10 +1,11 @@
 #pragma once
 
-#include "handler_type.hpp"
+#include "handler_base.hpp"
 
-struct on_entry_handler
+struct on_entry_handler : handler_base<handler_type::on_entry>
 {
-	constexpr static handler_type type = handler_type::on_entry;
+    void on_entry() const
+    {}
 };
 
 template<typename Function>
