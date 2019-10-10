@@ -11,4 +11,5 @@ template<>
 struct event_type_traits<UnexpectedEvent>
 {
     constexpr static unsigned id = UNEXPECTED_EVENT_ID;
+    constexpr static const char* name = "UnexpectedEvent";
 };

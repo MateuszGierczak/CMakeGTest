@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "event.hpp"
+#include "event_type_traits.hpp"
 
 #include "DummyEvent.hpp"
+#include "UnexpectedEvent.hpp"
+
+#include "event.hpp"
 
 struct event_test : ::testing::Test
 { 
@@ -16,7 +19,7 @@ TEST_F(event_test, should_get_proper_event_id)
 
 TEST_F(event_test, should_throw_expeption_when_payload_doesnt_match)
 {
-	ASSERT_THROW(sut.payload<double>(), event_payload_bad_cast);
+    ASSERT_THROW(sut.payload<UnexpectedEvent>(), event_payload_bad_cast<UnexpectedEvent>);
 }
 
 TEST_F(event_test, should_get_proper_payload_and_no_throw_exception)

@@ -1,50 +1,39 @@
 #pragma once
 
-#include <string_view>
+#include <memory>
 
-#include "multi_handler.hpp"
+#include "actions_chain_wrapper.hpp"
+
+struct event;
+struct fsm_base;
 
 struct state_base
 {
-	virtual ~state_base() = default;
+    virtual ~state_base() = default;
 
-	virtual std::string_view name() const noexcept = 0;
-	virtual void on_entry() const = 0;
-	virtual void on_leave() const = 0;
-	virtual bool handle_event(const event&) const = 0;
+    virtual const char* name() const noexcept = 0;
+    virtual bool handle_event(const event&, fsm_base&) const = 0;
 };
 
 struct state : state_base
 {
-	template<typename Handler, typename... Handlers>
-	state(std::string_view name, 
-		  Handler handler,
-		  Handlers... handlers) 
-		: name_{ name },
-		  handlers_{ std::make_unique<multi_handler<Handler, Handlers...>>(handler, handlers...) }
-	{}
+    template<typename Action, typename... Actions>
+    state(const char* name, Action action, Actions... actions)
+        : name_(name),
+          actions_chain_(std::make_unique<actions_chain_wrapper<Action, Actions...>>(action, actions...))
+    {}
 
-	std::string_view name() const noexcept override
-	{
-		return name_;
-	}
+    const char* name() const noexcept override
+    {
+        return name_;
+    }
 
-	void on_entry() const override
-	{
-		handlers_->on_entry();
-	}
-
-	void on_leave() const override
-	{
-		handlers_->on_leave();
-	}
-
-	bool handle_event(const event& event) const override
-	{
-		return handlers_->handle_event(event);
-	}
+    bool handle_event(const event& e, fsm_base& fsm) const override
+    {
+        return actions_chain_->handle_event(e, fsm);
+    }
 
 private:
-	std::string_view name_{};
-	std::unique_ptr<multi_handler_base> handlers_{};
+    const char* name_{};
+    std::unique_ptr<actions_chain_wrapper_base> actions_chain_ {};
 };

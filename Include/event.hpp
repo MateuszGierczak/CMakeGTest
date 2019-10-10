@@ -2,7 +2,6 @@
 
 #include <any>
 
-#include "event_type_traits.hpp"
 #include "event_payload_bad_cast.hpp"
 
 struct event
@@ -25,7 +24,7 @@ struct event
 
 		if (payload == nullptr)
 		{
-            throw event_payload_bad_cast{};
+            throw event_payload_bad_cast<PayloadType>{};
 		}
 		return *payload;
 	}

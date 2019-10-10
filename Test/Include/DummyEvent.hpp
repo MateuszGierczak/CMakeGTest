@@ -15,4 +15,5 @@ template<>
 struct event_type_traits<DummyEvent>
 {
     constexpr static unsigned id = DUMMY_EVENT_ID;
+    constexpr static const char* name = "DummyEvent";
 };
