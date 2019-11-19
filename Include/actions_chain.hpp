@@ -3,9 +3,8 @@
 #include "action.hpp"
 
 struct event;
-struct fsm_base;
 
-template<unsigned Index, typename Action, typename... Actions>
+template <unsigned Index, typename Action, typename... Actions>
 struct actions_chain : action<Index, Action>,
                        actions_chain<Index + 1, Actions...>
 {
@@ -17,9 +16,11 @@ struct actions_chain : action<Index, Action>,
           actions_chain<Index + 1, Actions...>{actions...}
     {}
 
-    bool handle_event(const event& e, fsm_base& fsm)
+    template<typename Fsm>
+    bool handle_event(const event &e, Fsm &fsm)
     {
-        return this_action::handle_event(e, fsm) or next_action::handle_event(e, fsm);
+        return this_action::handle_event(e, fsm) ||
+               next_action::handle_event(e, fsm);
     }
 };
 
@@ -32,7 +33,8 @@ struct actions_chain<Index, Action> : action<Index, Action>
         : action<Index, Action>{action}
     {}
 
-    bool handle_event(const event& e, fsm_base& fsm)
+    template<typename Fsm>
+    bool handle_event(const event &e, Fsm &fsm)
     {
         return this_action::handle_event(e, fsm);
     }

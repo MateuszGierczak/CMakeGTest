@@ -27,7 +27,7 @@ struct event_type_traits<UnexpectedEvent>
     constexpr static const char* name = "UnexpectedEvent";
 };
 
-class UserEquipment : public fsm
+class UserEquipment : public fsm<UserEquipment>
 {
 public:
     UserEquipment(const char* name)
@@ -35,6 +35,11 @@ public:
     {}
 
 private:
+    void function3(DummyEvent e)
+    {
+        std::cout << "Received dummy event" << '\n';
+    }
+
     void function(const DummyEvent&) noexcept
     {
         std::cout << "Zlapane" << std::endl;
@@ -49,17 +54,18 @@ private:
         std::cout << "nieporzadane" << std::endl;
     }
 
-    static state idle;
+    static state<UserEquipment> idle;
 };
 
-state UserEquipment::idle{"Idle",
-                          on_event(&UserEquipment::function)};
+state<UserEquipment> UserEquipment::idle{"Idle",
+                                         on_event<DummyEvent>([](const auto&) {std::cout << "lambda\n"; })};
 
 int main()
 {
     UserEquipment ue ("UserEquipmentFsm");
 
-    event e {UnexpectedEvent{}};
+    event e1 {UnexpectedEvent{}};
+    event e2 {DummyEvent{}};
 
-    ue.handle_event(e);
+    ue.handle_event(e2);
 }

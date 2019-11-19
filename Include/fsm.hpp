@@ -3,59 +3,61 @@
 #include "event.hpp"
 #include "state.hpp"
 
-struct fsm_base
+template<typename Derived>
+struct fsm
 {
-    virtual ~fsm_base() = default;
-
-    virtual const char* name() const noexcept = 0;
-    virtual const char* current_state_name() const noexcept = 0;
-
-    virtual void handle_event(const event&) = 0;
-
-    virtual void state_transition(state_base&) noexcept = 0;
-};
-
-struct fsm : fsm_base
-{
-    fsm(const char* name, state_base& initial_state)
-        : name_{name},
-          current_state_{initial_state}
-    {}
-
-    const char* name() const noexcept override
+    const char *name() const noexcept
     {
         return name_;
     }
 
-    const char* current_state_name() const noexcept override
+    const char *current_state_name() const noexcept
     {
-        return current_state_.name();
+        return current_state_->name();
     }
 
-    void state_transition(state_base& next_state) noexcept override
+    void state_transition(state<Derived>& next_state) noexcept
     {
         next_state_ = &next_state;
     }
 
-    void handle_event(const event& e) override
+    void handle_event(const event &e)
     {
-        const bool was_event_processed = current_state_.handle_event(e, *this);
+        const bool was_event_processed = current_state_->handle_event(e, static_cast<Derived&>(*this));
 
-        if(not was_event_processed)
+        if (not was_event_processed)
         {
             handle_unexpected_event(e);
         }
+
+        go_to_the_next_state();
     }
 
 private:
-    void handle_unexpected_event(const event& e)
+    friend Derived;
+
+    fsm(const char *name, state<Derived>& initial_state)
+        : name_{name},
+          current_state_{&initial_state}
+    {}
+
+    void go_to_the_next_state()
+    {
+        if (next_state_ != nullptr)
+        {
+            current_state_ = next_state_;
+            next_state_ = nullptr;
+        }
+    }
+
+    void handle_unexpected_event(const event &e)
     {
         std::cout << "Handle unexpected event with ID = " << e.id()
                   << ", in state " << current_state_name() << std::endl;
     }
 
-    const char* name_ {};
+    const char *name_{};
 
-    state_base& current_state_;
-    state_base* next_state_ {};
+    state<Derived>* current_state_{};
+    state<Derived>* next_state_{};
 };

@@ -1,49 +1,49 @@
 #pragma once
 
+#include <functional>
+
 #include "event.hpp"
 #include "action.hpp"
 #include "event_type_traits.hpp"
 
-struct fsm_base;
-
-template<typename FsmClass>
-FsmClass& get_fsm_from_base(fsm_base& fsm)
-{
-    static_assert(std::is_base_of_v<fsm_base, FsmClass>, "");
-    return static_cast<FsmClass&>(fsm);
-}
-
-template<typename FsmClass, typename PayloadType>
+template<typename PayloadType, typename FunctionType>
 struct on_event_action
 {
-    bool handle_event(const event& e, fsm_base& fsm)
+    template<typename Fsm>
+    bool handle_event(const event& e, Fsm& fsm)
     {
         if (event_type_traits<PayloadType>::id == e.id())
         {
-            (get_fsm_from_base<FsmClass>(fsm).*function_)(e.payload<PayloadType>());
+            if constexpr(std::is_member_function_pointer_v<FunctionType>)
+            {
+                std::invoke(function_, fsm, e.payload<PayloadType>());
+            }
+            else
+            {
+                std::invoke(function_, e.payload<PayloadType>());
+            }
             return true;
         }
         return false;
     }
 
-    using FunctionType = void (FsmClass::*)(const PayloadType&);
-
-    FunctionType function_ {};
+    FunctionType function_{};
 };
 
-template<unsigned Index, typename FsmClass, typename PayloadType>
-struct action<Index, on_event_action<FsmClass, PayloadType>>
+template<unsigned Index, typename FunctionType, typename PayloadType>
+struct action<Index, on_event_action<PayloadType, FunctionType>>
 {
-    bool handle_event(const event& e, fsm_base& fsm)
+    template<typename Fsm>
+    bool handle_event(const event& e, Fsm& fsm)
     {
         return action_.handle_event(e, fsm);
     }
 
-    on_event_action<FsmClass, PayloadType> action_ {};
+    on_event_action<PayloadType, FunctionType> action_ {};
 };
 
-template<typename FsmClass, typename PayloadType>
-auto on_event(void (FsmClass::*function)(const PayloadType&))
+template<typename PayloadType, typename FunctionType>
+auto on_event(FunctionType function)
 {
-    return on_event_action<FsmClass, PayloadType>{function};
+    return on_event_action<PayloadType, FunctionType>{function};
 }
