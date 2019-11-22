@@ -3,7 +3,6 @@
 #include "actions_chain.hpp"
 
 struct event;
-struct fsm_base;
 
 template<typename Fsm>
 struct actions_chain_wrapper_base

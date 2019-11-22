@@ -14,14 +14,7 @@ struct on_event_action
     {
         if (event_type_traits<PayloadType>::id == e.id())
         {
-            if constexpr(std::is_member_function_pointer_v<FunctionType>)
-            {
-                std::invoke(function_, fsm, e.payload<PayloadType>());
-            }
-            else
-            {
-                std::invoke(function_, e.payload<PayloadType>());
-            }
+            std::invoke(function_, fsm, e.payload<PayloadType>());
             return true;
         }
         return false;
@@ -42,8 +35,14 @@ struct action<Index, on_event_action<PayloadType, FunctionType>>
     on_event_action<PayloadType, FunctionType> action_ {};
 };
 
-template<typename PayloadType, typename FunctionType>
-auto on_event(FunctionType function)
+template<typename Fsm, typename PayloadType>
+auto on_event(void (Fsm::*function)(const PayloadType&))
 {
-    return on_event_action<PayloadType, FunctionType>{function};
+    return on_event_action<PayloadType, decltype(function)>{function};
+}
+
+template<typename Fsm, typename PayloadType>
+auto on_event(void (Fsm::*function)(const PayloadType&) const)
+{
+    return on_event_action<PayloadType, decltype(function)>{function};
 }

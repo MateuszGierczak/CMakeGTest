@@ -40,7 +40,7 @@ private:
         std::cout << "Received dummy event" << '\n';
     }
 
-    void function(const DummyEvent&) noexcept
+    void function(const DummyEvent&)
     {
         std::cout << "Zlapane" << std::endl;
     }
@@ -49,7 +49,7 @@ private:
         std::cout << "Zlapane 2" << std::endl;
     }
 
-    void unexpected(const event&)
+    void unexpected(const event&) const
     {
         std::cout << "nieporzadane" << std::endl;
     }
@@ -58,7 +58,8 @@ private:
 };
 
 state<UserEquipment> UserEquipment::idle{"Idle",
-                                         on_event<DummyEvent>([](const auto&) {std::cout << "lambda\n"; })};
+                                         on_event(&UserEquipment::function),
+                                         &UserEquipment::unexpected};
 
 int main()
 {
@@ -68,4 +69,6 @@ int main()
     event e2 {DummyEvent{}};
 
     ue.handle_event(e2);
+
+    std::cout << ue.current_state_name() << '\n';
 }

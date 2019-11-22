@@ -19,7 +19,7 @@ struct actions_chain : action<Index, Action>,
     template<typename Fsm>
     bool handle_event(const event &e, Fsm &fsm)
     {
-        return this_action::handle_event(e, fsm) ||
+        return this_action::handle_event(e, fsm) or
                next_action::handle_event(e, fsm);
     }
 };

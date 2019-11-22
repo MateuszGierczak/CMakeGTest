@@ -3,34 +3,39 @@
 #include "action.hpp"
 
 struct event;
-struct fsm_base;
 
-template<typename Class>
-struct on_unexpected_event_action
+template<unsigned Index, typename Fsm>
+struct action<Index, void (Fsm::*)(const event&) const>
 {
-    bool handle_event(const event& e, fsm_base& fsm)
+    bool handle_event(const event& e, Fsm& fsm)
     {
+        std::invoke(function, fsm, e);
         return true;
     }
 
-    using FunctionType = void(Class::*)(const event&);
-
-    FunctionType funtion_{};
+    void (Fsm::*function)(const event&) const {};
 };
 
-template<unsigned Index, typename Class>
-struct action<Index, on_unexpected_event_action<Class>>
+template<unsigned Index, typename Fsm>
+struct action<Index, void (Fsm::*)(const event&) noexcept>
 {
-    bool handle_event(const event& e, fsm_base& fsm)
+    bool handle_event(const event& e, Fsm& fsm)
     {
-        return action_.handle_event(e, fsm);
+        std::invoke(function, fsm, e);
+        return true;
     }
 
-    on_unexpected_event_action<Class> action_ {};
+    void (Fsm::*function)(const event&) noexcept {};
 };
 
-template<typename Class>
-auto on_unexpected_event(void (Class::*function)(const event&))
+template<unsigned Index, typename Fsm>
+struct action<Index, void (Fsm::*)(const event&) const noexcept>
 {
-    return on_unexpected_event_action<Class>{function};
-}
+    bool handle_event(const event& e, Fsm& fsm)
+    {
+        std::invoke(function, fsm, e);
+        return true;
+    }
+
+    void (Fsm::*function)(const event&) const noexcept {};
+};
