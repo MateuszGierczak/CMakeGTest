@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#install dependecies
-sudo apt-get install curl unzip tar
+#install vcpkg if VCPKG_ROOT variable is set
+if [[ -z "$VCPKG_ROOT" ]]; then
+	echo "Please add following command: export VCPKG_ROOT=\$HOME/vcpkg to .bashrc file"
+else
+	#install dependecies
+	sudo apt-get install curl unzip tar
 
-#install vcpkg
-vcpkg_dir_name=vcpkg
-vcpkg_path=$HOME/$vcpkg_dir_name
-
-git clone https://github.com/Microsoft/vcpkg.git $vcpkg_path
-
-cd $vcpkg_path && ./bootstrap-vcpkg.sh && ./vcpkg integrate install && rm -rf $vcpkg_path
+	sudo git clone https://github.com/Microsoft/vcpkg.git $VCPKG_ROOT
+	cd $VCPKG_ROOT && sudo ./bootstrap-vcpkg.sh && sudo ./vcpkg integrate install && sudo ./vcpkg integrate bash
+fi
 
 

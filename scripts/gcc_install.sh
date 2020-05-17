@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
 #gcc and g++
 sudo apt-get install build-essential
 sudo apt-get install gcc-7 g++-7 gcc-8 g++-8 gcc-9 g++-9
