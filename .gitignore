@@ -1,1 +1,9 @@
-.vs/
+# Ignore everything
+/*
+
+# Except source/ include/ and test/ directory
+!/source
+!/include
+!/test
+!/scripts
+!/.gitignore
