@@ -4,45 +4,86 @@
 
 #include "event.hpp"
 #include "action.hpp"
+#include "action_tag.hpp"
 #include "event_type_traits.hpp"
 
-template<typename PayloadType, typename FunctionType>
-struct on_event_action
+namespace
 {
-    template<typename Fsm>
-    bool handle_event(const event& e, Fsm& fsm)
+    template<typename Payload, typename Function, typename Fsm>
+    bool invoke_function_for_payload(Function function, Fsm& fsm, const event& e)
     {
-        if (event_type_traits<PayloadType>::id == e.id())
+        if(event_type_traits<Payload>::id == e.id())
         {
-            std::invoke(function_, fsm, e.payload<PayloadType>());
+            std::invoke(function, fsm, e.payload<Payload>());
             return true;
         }
         return false;
     }
+}
 
-    FunctionType function_{};
+template<typename Function>
+struct on_event_action;
+
+template<typename Payload, typename Fsm>
+struct on_event_action<void (Fsm::*)(const Payload&)>
+{
+    bool handle_event(const event& e, Fsm& fsm)
+    {
+        return invoke_function_for_payload<Payload>(function_, fsm, e);
+    }
+
+    void (Fsm::*function_)(const Payload&) {};
 };
 
-template<unsigned Index, typename FunctionType, typename PayloadType>
-struct action<Index, on_event_action<PayloadType, FunctionType>>
+template<typename Payload, typename Fsm>
+struct on_event_action<void (Fsm::*)(const Payload&) const>
 {
+    bool handle_event(const event& e, Fsm& fsm)
+    {
+        return invoke_function_for_payload<Payload>(function_, fsm, e);
+    }
+
+    void (Fsm::*function_)(const Payload&) const {}; 
+};
+
+template<typename Payload, typename Fsm>
+struct on_event_action<void (Fsm::*)(const Payload&) const noexcept>
+{
+    bool handle_event(const event& e, Fsm& fsm)
+    {
+        return invoke_function_for_payload<Payload>(function_, fsm, e);
+    }
+
+    void (Fsm::*function_)(const Payload&) const noexcept {}; 
+};
+
+template<typename Payload, typename Fsm>
+struct on_event_action<void (Fsm::*)(const Payload&) noexcept>
+{
+    bool handle_event(const event& e, Fsm& fsm)
+    {
+        return invoke_function_for_payload<Payload>(function_, fsm, e);
+    }
+
+    void (Fsm::*function_)(const Payload&) noexcept {}; 
+};
+
+template<unsigned Index, typename Function>
+struct action<Index, on_event_action<Function>>
+{
+    constexpr static action_tag tag = action_tag::on_event;
+
     template<typename Fsm>
     bool handle_event(const event& e, Fsm& fsm)
     {
         return action_.handle_event(e, fsm);
     }
 
-    on_event_action<PayloadType, FunctionType> action_ {};
+    on_event_action<Function> action_ {};
 };
 
-template<typename Fsm, typename PayloadType>
-auto on_event(void (Fsm::*function)(const PayloadType&))
+template<typename Function>
+auto on_event(Function function)
 {
-    return on_event_action<PayloadType, decltype(function)>{function};
-}
-
-template<typename Fsm, typename PayloadType>
-auto on_event(void (Fsm::*function)(const PayloadType&) const)
-{
-    return on_event_action<PayloadType, decltype(function)>{function};
+    return on_event_action<Function>{function};
 }
